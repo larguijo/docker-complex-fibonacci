@@ -1,0 +1,20 @@
+language: generic
+sudo: required
+services:
+  - docker
+before_install:
+  - docker build -t rodriguezarguijo/docker-complex-fibonacci-test -f ./client/Dockerfile.dev ./client
+script:
+  - docker run -e CI=true rodriguezarguijo/docker-complex-fibonacci-test npm test
+after_success:
+  - docker build -t rodriguezarguijo/multi-client ./client
+  - docker build -t rodriguezarguijo/multi-nginx ./nginx
+  - docker build -t rodriguezarguijo/multi-server ./server
+  - docker build -t rodriguezarguijo/multi-worker ./worker
+  # Log into docker CLI
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  # Take images and push them to Docker hub.  
+  - docker push rodriguezarguijo/multi-client
+  - docker push rodriguezarguijo/multi-nginx
+  - docker push rodriguezarguijo/multi-server
+  - docker push rodriguezarguijo/multi-worker
